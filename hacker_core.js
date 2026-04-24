@@ -18,9 +18,25 @@ const CommandLibrary = {
     scan_db: async () => {
         const snap = await get(ref(db, `rooms/${currentRoomCode}/gameState`));
         const state = snap.val();
-        if (!state.layer1_done) return "ERROR: Access Denied. Firewall must be breached first (Layer 1).";
+        if (!state.layer1_usb) return "ERROR: Firewall active. Waiting for Agent to plug USB bypass.";
         
-        await typeText("Scanning local intranet...\n[+] Database cluster found.\n[+] Analyzing security schema...\n[!] Vulnerable table identified: " + state.layer2_table);
+        return "BRUTE_FORCE_INIT";
+    },
+
+    align_nodes: async () => {
+        const snap = await get(ref(db, `rooms/${currentRoomCode}/gameState`));
+        const state = snap.val();
+        
+        if (!state.layer2_done) return "ERROR: Vault door is closed. Disarm physical alarms first (Layer 2 & 3).";
+        if (state.layer4_active) return "Network Alignment Protocol already active.";
+        
+        await update(ref(db, `rooms/${currentRoomCode}/gameState`), { layer4_active: true });
+        
+        // Show puzzle UI
+        document.getElementById('hacker-grid-ui').classList.remove('hidden');
+        logToSystem("INFO", "NETWORK ALIGNMENT PROTOCOL INITIATED.");
+        initGridPuzzle();
+        return "Opening Data Flow Grid... Awaiting Agent Defense Protocol.";
     },
 
     sql: async (args) => {
@@ -313,6 +329,25 @@ Waiting for agent connection...\n`;
                 clearInterval(timerInterval);
                 timerInterval = null;
             }
+            
+            // Grid Puzzle Interdependency
+            if (state.layer4_active) {
+                const gridStatus = document.getElementById('grid-status');
+                const puzzleGrid = document.getElementById('puzzle-grid');
+                if (state.agent_defending) {
+                    gridEnabled = true;
+                    gridStatus.innerText = "AGENT DEFENDING. GRID UNLOCKED.";
+                    gridStatus.style.color = "#2ecc71";
+                    puzzleGrid.style.opacity = "1";
+                    puzzleGrid.style.pointerEvents = "auto";
+                } else {
+                    gridEnabled = false;
+                    gridStatus.innerText = "WARNING: AGENT NOT DEFENDING! GRID LOCKED.";
+                    gridStatus.style.color = "var(--alert-red)";
+                    puzzleGrid.style.opacity = "0.5";
+                    puzzleGrid.style.pointerEvents = "none";
+                }
+            }
         } else {
             clearInterval(timerInterval);
             timerInterval = null;
@@ -374,5 +409,70 @@ function dragElement(elmnt) {
     function closeDragElement() {
         document.onmouseup = null;
         document.onmousemove = null;
+    }
+}
+
+// --- GRID PUZZLE LOGIC ---
+let gridCells = [];
+let gridEnabled = false;
+
+function initGridPuzzle() {
+    const gridContainer = document.getElementById('puzzle-grid');
+    gridContainer.innerHTML = '';
+    gridCells = [];
+    
+    // Create 3x3 grid of pipes
+    // 0 = straight, 1 = corner
+    const layout = [
+        {type: 1, rot: Math.floor(Math.random()*4)}, {type: 0, rot: Math.floor(Math.random()*2)}, {type: 1, rot: Math.floor(Math.random()*4)},
+        {type: 0, rot: Math.floor(Math.random()*2)}, {type: 1, rot: Math.floor(Math.random()*4)}, {type: 0, rot: Math.floor(Math.random()*2)},
+        {type: 1, rot: Math.floor(Math.random()*4)}, {type: 0, rot: Math.floor(Math.random()*2)}, {type: 1, rot: Math.floor(Math.random()*4)}
+    ];
+    
+    layout.forEach((cellData, i) => {
+        const cell = document.createElement('div');
+        cell.style.width = '100%';
+        cell.style.height = '100%';
+        cell.style.backgroundColor = '#111';
+        cell.style.border = '1px solid #333';
+        cell.style.display = 'flex';
+        cell.style.justifyContent = 'center';
+        cell.style.alignItems = 'center';
+        cell.style.cursor = 'pointer';
+        cell.style.transition = 'transform 0.2s';
+        
+        // Draw pipe visually using SVG or simple CSS
+        cell.innerHTML = cellData.type === 0 ? 
+            `<div style="width: 100%; height: 20px; background: var(--neon-green);"></div>` : 
+            `<div style="width: 50%; height: 20px; background: var(--neon-green); position:absolute; left:0;"></div>
+             <div style="width: 20px; height: 50%; background: var(--neon-green); position:absolute; bottom:0;"></div>`;
+             
+        cell.style.transform = `rotate(${cellData.rot * 90}deg)`;
+        
+        cell.addEventListener('click', () => {
+            if (!gridEnabled) return;
+            cellData.rot = (cellData.rot + 1) % 4;
+            cell.style.transform = `rotate(${cellData.rot * 90}deg)`;
+            checkGridWin();
+        });
+        
+        gridContainer.appendChild(cell);
+        gridCells.push(cellData);
+    });
+}
+
+async function checkGridWin() {
+    const isWin = gridCells.every(c => c.rot === 0 || c.rot === 2);
+    
+    if (isWin) {
+        gridEnabled = false;
+        document.getElementById('grid-status').innerText = "DATA FLOW ESTABLISHED. EXTRACTION COMPLETE.";
+        document.getElementById('grid-status').style.color = "#2ecc71";
+        
+        await update(ref(db, `rooms/${currentRoomCode}/gameState`), { heist_success: true });
+        
+        setTimeout(() => {
+            document.getElementById('hacker-grid-ui').classList.add('hidden');
+        }, 3000);
     }
 }

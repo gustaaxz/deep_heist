@@ -31,51 +31,39 @@
             </div>
         </div>
 
-        <!-- AGENT UI INTERFACE (Integrated) -->
-        <div id="agent-ui" class="hidden">
-            <h2 style="color: white; margin-bottom: 20px;">Agent Connected to Room: <span id="agent-display-code" style="color: #3498db;"></span></h2>
+        <!-- AGENT UI INTERFACE (2D Canvas Stealth) -->
+        <div id="agent-ui" class="hidden" style="width: 100%; height: 100vh; position: relative; background: #111;">
+            <div style="position: absolute; top: 10px; left: 10px; color: white; z-index: 10;">
+                <h2 style="margin: 0; text-shadow: 2px 2px 4px #000;">Room: <span id="agent-display-code" style="color: #3498db;"></span></h2>
+                <div id="agent-status-msg" style="color: #f1c40f; font-weight: bold; background: rgba(0,0,0,0.5); padding: 5px; border: 1px solid #f1c40f; display: inline-block; margin-top: 5px;">INFILTRATION STARTED</div>
+            </div>
             
-            <div style="width: 80%; max-width: 400px; margin-bottom: 20px;">
-                <div style="color: #e74c3c; font-weight: bold; text-align: left; margin-bottom: 5px;">SUSPICION LEVEL</div>
-                <div style="background: #333; width: 100%; height: 20px; border-radius: 10px; overflow: hidden; border: 1px solid #555;">
-                    <div id="suspicion-bar" style="background: #e74c3c; width: 0%; height: 100%; transition: width 0.3s;"></div>
-                </div>
+            <div style="position: absolute; top: 10px; right: 10px; color: white; background: rgba(0,0,0,0.7); padding: 10px; border: 1px solid #444; z-index: 10;">
+                <h3 style="margin-top: 0; margin-bottom: 5px; color: #e74c3c;">OBJECTIVES</h3>
+                <ul id="agent-objectives" style="padding-left: 20px; font-size: 0.9rem; color: #ccc; margin: 0;">
+                    <li>Find Terminal & Plug USB</li>
+                </ul>
             </div>
 
-            <!-- LAYER 1: USB -->
-            <div id="agent-layer1" style="margin-bottom: 20px; background: #222; padding: 20px; border-radius: 10px; border: 1px solid #444; width: 80%; max-width: 400px; text-align: center;">
-                <h3 style="color: white; margin-top: 0;">L1: EXTERNAL FIREWALL</h3>
-                <p style="color: #aaa; font-size: 0.9rem;">Find the local server box to bridge the connection for your Hacker.</p>
-                <button id="btn-agent-usb" class="btn" style="background: #8e44ad; color: white; border: none; font-weight: bold; width: 100%;">PLUG USB BYPASS</button>
-            </div>
-
-            <!-- LAYER 2: WIRES & KEYPAD -->
-            <div id="agent-layer2" class="hidden" style="margin-bottom: 20px; background: #222; padding: 20px; border-radius: 10px; border: 1px solid #444; width: 80%; max-width: 400px; text-align: center;">
-                <h3 style="color: white; margin-top: 0;">L2: INTERNAL SECURITY ROUTING</h3>
-                <p style="color: #aaa; font-size: 0.9rem;">The door alarm is armed. The Hacker must read the manual and tell you which wire to cut!</p>
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <button class="btn btn-wire" data-color="RED" style="background: #c0392b; flex: 1; border: none; color: white; font-weight:bold;">CUT RED</button>
-                    <button class="btn btn-wire" data-color="GREEN" style="background: #27ae60; flex: 1; border: none; color: white; font-weight:bold;">CUT GREEN</button>
-                    <button class="btn btn-wire" data-color="BLUE" style="background: #2980b9; flex: 1; border: none; color: white; font-weight:bold;">CUT BLUE</button>
-                </div>
-            </div>
-
-            <!-- LAYER 3: PAYLOAD HIDE -->
-            <div id="agent-layer3" class="hidden" style="margin-bottom: 20px; background: #222; padding: 20px; border-radius: 10px; border: 1px solid #444; width: 80%; max-width: 400px; text-align: center; border-color: var(--alert-red);">
-                <h3 style="color: var(--alert-red); margin-top: 0;">L3: VAULT PAYLOAD EXTRACTION</h3>
-                <p style="color: #aaa; font-size: 0.9rem;">The Hacker is downloading the payload! Guards are actively searching the area. Keep your Suspicion low!</p>
-                <button id="btn-agent-hide" class="btn" style="background: #f39c12; color: black; border: none; font-weight: bold; width: 100%;">HIDE / DISTRACT GUARD</button>
-            </div>
-
-            <p style="color: #ccc; margin-bottom: 10px; font-size: 1.2rem;">Quick Actions:</p>
-            <button id="btn-agent-trigger" class="btn" style="background:#e74c3c; color: white; border: none; font-weight: bold; padding: 5px 10px; font-size: 0.9rem;">Force Alarm</button>
+            <!-- The Game Map -->
+            <canvas id="agent-canvas" style="display: block; width: 100%; height: 100%;"></canvas>
         </div>
 
         <!-- HACKER OS INTERFACE (Hidden initially) -->
-        <div id="hacker-ui" class="hidden">
+        <div id="hacker-ui" class="hidden" style="position: relative;">
             
+            <!-- GLOBAL TRACE HUD -->
+            <div id="hacker-trace-hud" style="position: absolute; top: 0; left: 0; width: 100%; height: 30px; background: #111; border-bottom: 2px solid var(--alert-red); z-index: 10; display: flex; align-items: center; padding: 0 20px; box-sizing: border-box;">
+                <div style="color: var(--alert-red); font-weight: bold; margin-right: 15px; text-shadow: 0 0 5px var(--alert-red);">TRACE SIGNAL:</div>
+                <div style="flex: 1; height: 10px; background: #222; border: 1px solid #444;">
+                    <div id="trace-bar" style="background: var(--alert-red); width: 0%; height: 100%; transition: width 0.3s; box-shadow: 0 0 10px var(--alert-red);"></div>
+                </div>
+            </div>
+
             <!-- LEFT SIDEBAR -->
-            <div id="sidebar-left" class="panel">
+            <div id="sidebar-left" class="panel" style="margin-top: 30px;">
+            
+
                 <div class="panel-header">NETWORK NODES</div>
                 <div class="panel-content" id="node-list">
                     <!-- Nodes populated by JS -->
@@ -87,16 +75,10 @@
                     <div>RAM: <span id="ram-usage">2048MB</span></div>
                     <div>NET: <span id="net-usage">SECURE</span></div>
                 </div>
-                <div class="panel-header" style="border-top: 1px solid var(--dim-green); color: var(--alert-red);">TRACE SIGNAL</div>
-                <div class="panel-content" style="flex: 0; padding-bottom: 15px;">
-                    <div style="background: #111; width: 100%; height: 15px; border: 1px solid var(--alert-red); margin-top: 5px;">
-                        <div id="trace-bar" style="background: var(--alert-red); width: 0%; height: 100%; transition: width 0.3s;"></div>
-                    </div>
-                </div>
             </div>
 
             <!-- MAIN TERMINAL -->
-            <div id="main-terminal" class="panel">
+            <div id="main-terminal" class="panel" style="margin-top: 30px;">
                 <div class="panel-header">TERMINAL - ROOT ACCESS</div>
                 <div id="output">Initializing Heist OS... [OK]
 Connecting to secure server... [OK]
@@ -109,7 +91,7 @@ Awaiting command...
             </div>
 
             <!-- RIGHT SIDEBAR -->
-            <div id="sidebar-right" class="panel">
+            <div id="sidebar-right" class="panel" style="margin-top: 30px;">
                 <div class="panel-header" style="color: #f1c40f;">EXTRACTION TIMER</div>
                 <div class="panel-content" style="flex: 0; min-height: 50px; border-bottom: 1px solid var(--dim-green); display: flex; justify-content: center; align-items: center;">
                     <span id="hacker-timer" style="font-size: 2rem; font-weight: bold; color: #f1c40f;">15:00</span>
@@ -125,6 +107,22 @@ Awaiting command...
                 </div>
             </div>
 
+        </div>
+
+        <!-- HACKER GRID PUZZLE MODAL -->
+        <div id="hacker-grid-ui" class="hidden" style="position: absolute; top: 15%; left: 50%; transform: translateX(-50%); width: 500px; background: var(--panel-bg); border: 2px solid var(--neon-green); z-index: 95; display: flex; flex-direction: column; box-shadow: 0 0 20px var(--neon-green);">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>NETWORK NODE ALIGNMENT (L4)</span>
+            </div>
+            <div class="panel-content" style="padding: 20px; display: flex; flex-direction: column; align-items: center;">
+                <div id="grid-status" style="color: #f1c40f; margin-bottom: 15px; font-weight: bold; text-align: center;">WAITING FOR FIELD AGENT DEFENSE PROTOCOL...</div>
+                
+                <div id="puzzle-grid" style="display: grid; grid-template-columns: repeat(3, 80px); grid-template-rows: repeat(3, 80px); gap: 5px; opacity: 0.5; pointer-events: none;">
+                    <!-- Grid cells populated via JS -->
+                </div>
+                
+                <p style="color: #aaa; text-align: center; margin-top: 20px; font-size: 0.9rem;">Click nodes to rotate. Connect the left entrance to the right exit.<br>The connection drops if the Agent is overrun!</p>
+            </div>
         </div>
 
         <!-- GAME OVER INTERFACE -->
@@ -166,10 +164,11 @@ Awaiting command...
                     <li><strong style="color: white;">clear</strong>: Limpa a tela.</li>
                 </ul>
 
-                <h2 style="color: var(--neon-green);">As 3 Camadas do Assalto</h2>
-                <p>1. <strong>Camada 1:</strong> Agente pluga USB -> Hacker faz brute_force (4 dígitos).</p>
-                <p>2. <strong>Camada 2:</strong> Hacker acha tabela via scan_db e roda SQL para desligar lasers. Hacker também lê o manual da porta e grita qual fio o agente deve cortar.</p>
-                <p>3. <strong>Camada 3:</strong> Hacker roda decrypt_payload. Durante os 30s de download, o Agente vai ser caçado e tem que se esconder sem parar!</p>
+                <h2 style="color: var(--neon-green);">As 4 Camadas do Assalto</h2>
+                <p>1. <strong>Camada 1:</strong> Agente interage fisicamente com a Caixa de Rede (USB) -> Hacker faz brute_force (4 dígitos).</p>
+                <p>2. <strong>Camada 2:</strong> Hacker acha tabela via scan_db e roda SQL para desligar os lasers vermelhos que bloqueiam os corredores 2D.</p>
+                <p>3. <strong>Camada 3:</strong> Hacker lê o manual da porta e grita qual fio físico o Agente deve cortar no mapa 2D.</p>
+                <p>4. <strong>Camada 4 (Final):</strong> O Agente chega ao Vault e o defende dos guardas. O Hacker digita <code>align_nodes</code> e resolve o puzzle da rede.</p>
                 <p><strong>CUIDADO:</strong> Vocês têm exatos 15 MINUTOS para fazer tudo isso antes que o timer zere!</p>
             </div>
         </div>

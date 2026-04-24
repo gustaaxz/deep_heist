@@ -115,6 +115,8 @@ btnCreate.addEventListener('click', async () => {
                 layer2_wire: randomWire,
                 layer2_done: false,
                 layer3_active: false,
+                layer4_active: false,
+                agent_defending: false,
                 heist_success: false
             },
             logs: {
@@ -202,6 +204,8 @@ btnRetry.addEventListener('click', async () => {
         layer2_wire: wires[Math.floor(Math.random() * wires.length)],
         layer2_done: false,
         layer3_active: false,
+        layer4_active: false,
+        agent_defending: false,
         heist_success: false
     });
     
