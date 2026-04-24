@@ -40,30 +40,36 @@ btnCreate.addEventListener('click', async () => {
     btnCreate.disabled = true;
     statusDiv.innerText = "Creating secure connection...";
     
-    const roomCode = generateCode();
-    const roomRef = ref(db, `rooms/${roomCode}`);
-    
-    const snapshot = await get(roomRef);
-    if (snapshot.exists()) {
-        statusDiv.innerText = "Error: Code collision. Try again.";
-        btnCreate.disabled = false;
-        return;
-    }
-
-    await set(roomRef, {
-        status: 'waiting',
-        createdAt: Date.now(),
-        players: {},
-        gameState: {
-            alarms: false,
-            security: { lasers: "ACTIVE", cameras: "ONLINE" }
-        },
-        logs: {
-            0: { msg: "System Initialized. Awaiting agents...", type: "INFO" }
+    try {
+        const roomCode = generateCode();
+        const roomRef = ref(db, `rooms/${roomCode}`);
+        
+        const snapshot = await get(roomRef);
+        if (snapshot.exists()) {
+            statusDiv.innerText = "Error: Code collision. Try again.";
+            btnCreate.disabled = false;
+            return;
         }
-    });
 
-    showRoleSelection(roomCode);
+        await set(roomRef, {
+            status: 'waiting',
+            createdAt: Date.now(),
+            players: {},
+            gameState: {
+                alarms: false,
+                security: { lasers: "ACTIVE", cameras: "ONLINE" }
+            },
+            logs: {
+                0: { msg: "System Initialized. Awaiting agents...", type: "INFO" }
+            }
+        });
+
+        showRoleSelection(roomCode);
+    } catch (error) {
+        console.error(error);
+        statusDiv.innerText = `Error: ${error.message}`;
+        btnCreate.disabled = false;
+    }
 });
 
 btnJoin.addEventListener('click', async () => {
@@ -76,13 +82,19 @@ btnJoin.addEventListener('click', async () => {
     btnJoin.disabled = true;
     statusDiv.innerText = "Authenticating...";
 
-    const dbRef = ref(db);
-    const roomSnapshot = await get(child(dbRef, `rooms/${code}`));
+    try {
+        const dbRef = ref(db);
+        const roomSnapshot = await get(child(dbRef, `rooms/${code}`));
 
-    if (roomSnapshot.exists()) {
-        showRoleSelection(code);
-    } else {
-        statusDiv.innerText = "Server not found. Connection refused.";
+        if (roomSnapshot.exists()) {
+            showRoleSelection(code);
+        } else {
+            statusDiv.innerText = "Server not found. Connection refused.";
+            btnJoin.disabled = false;
+        }
+    } catch (error) {
+        console.error(error);
+        statusDiv.innerText = `Error: ${error.message}`;
         btnJoin.disabled = false;
     }
 });
