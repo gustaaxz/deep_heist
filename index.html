@@ -104,6 +104,43 @@ Awaiting command...
 
         </div>
 
+        <!-- GAME OVER INTERFACE -->
+        <div id="game-over-ui" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(20, 0, 0, 0.95); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+            <h1 class="title-glitch" style="color: var(--alert-red);" data-text="SYSTEM COMPROMISED">SYSTEM COMPROMISED</h1>
+            <h2 style="color: white; margin-bottom: 40px; font-family: sans-serif;">Vocês foram pegos, não há mais volta.</h2>
+            <div style="display: flex; gap: 20px;">
+                <button id="btn-retry" class="btn" style="border-color: var(--neon-green); color: var(--neon-green);">Tentar Novamente</button>
+                <button id="btn-main-menu" class="btn" style="border-color: #555; color: #aaa;">Menu Principal</button>
+            </div>
+        </div>
+
+        <!-- HACKER MANUAL MODAL -->
+        <div id="hacker-manual-ui" class="hidden" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 800px; height: 80%; background: var(--panel-bg); border: 2px solid var(--neon-green); z-index: 90; display: flex; flex-direction: column; box-shadow: 0 0 20px var(--neon-green);">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>HACKER MANUAL (DEEP WEB HEIST)</span>
+                <button id="btn-close-manual" style="background: transparent; color: var(--alert-red); border: none; font-size: 1.5rem; cursor: pointer; font-weight: bold;">X</button>
+            </div>
+            <div class="panel-content" style="padding: 20px; font-size: 1.3rem; line-height: 1.5; color: #ccc;">
+                <h2 style="color: var(--neon-green); margin-top: 0;">Objetivo da Missão</h2>
+                <p>O <strong>Hacker</strong> é os olhos e ouvidos do <strong>Agente de Campo</strong>. Seu trabalho é monitorar a rede, desativar sistemas de segurança, quebrar senhas e guiar o Agente pelo prédio corporativo em segurança.</p>
+                
+                <h2 style="color: var(--neon-green);">Comandos do Terminal</h2>
+                <ul>
+                    <li><strong style="color: white;">help</strong>: Lista todos os comandos básicos.</li>
+                    <li><strong style="color: white;">manual</strong>: Abre esta página de guia.</li>
+                    <li><strong style="color: white;">netscan</strong>: Mapeia a rede para encontrar IPs e nodos vulneráveis no prédio.</li>
+                    <li><strong style="color: white;">ping [ip]</strong>: Testa a conexão com um IP específico para ver se ele está ativo.</li>
+                    <li><strong style="color: white;">brute_force [ip]</strong>: Inicia um mini-game de adivinhação de PIN (3 dígitos). Você tem 5 tentativas. <br>🟩 = Certo e na posição certa | 🟨 = Certo, mas na posição errada | 🟥 = Errado.</li>
+                    <li><strong style="color: white;">sql [query]</strong>: Executa injeções de banco de dados. <br>Exemplo vital: <span style="color: var(--alert-red);">sql UPDATE SECURITY SET STATUS='OFF'</span> (Desativa os lasers para o Agente passar).</li>
+                    <li><strong style="color: white;">clear</strong>: Limpa a tela do terminal.</li>
+                </ul>
+
+                <h2 style="color: var(--neon-green);">Regras de Ouro</h2>
+                <p>1. <strong>Comunique-se por voz:</strong> O Agente não vê o que você vê. Se você desativar um laser, avise-o. Se ele vir um teclado numérico, ache o PIN e dite para ele.</p>
+                <p>2. <strong>Cuidado com o TRACE:</strong> Errar comandos aumenta o sinal de rastreamento. Se chegar a 100%, vocês perdem.</p>
+            </div>
+        </div>
+
     </div>
     
     <!-- Main scripts -->

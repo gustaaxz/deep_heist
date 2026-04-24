@@ -7,8 +7,13 @@ let traceLevel = 0;
 
 // --- MOTOR DE COMANDOS ---
 const CommandLibrary = {
-    help: () => "Available: ls, cat, sql, netscan, ping, brute_force, clear",
+    help: () => "Available: ls, cat, sql, netscan, ping, brute_force, clear, manual",
     
+    manual: () => {
+        document.getElementById("hacker-manual-ui").classList.remove("hidden");
+        return "Opening Hacker Manual...";
+    },
+
     sql: (args) => {
         const query = args.join(" ").toUpperCase();
         if (query.includes("UPDATE SECURITY SET STATUS='OFF'")) {
@@ -93,7 +98,7 @@ input.addEventListener("keydown", async (e) => {
         return;
     }
 
-    if (e.key === "Enter" && !isTyping) {
+    if (e.key === "Enter" && !isTyping && !input.disabled) {
         const cmdString = input.value.trim();
         if (!cmdString) return;
 
@@ -120,6 +125,7 @@ input.addEventListener("keydown", async (e) => {
                     } else {
                         activeMinigame = null;
                         await typeText(`[!] BRUTE FORCE FAILED. System locked. The correct PIN was ${activeMinigame.target}.`);
+                        increaseTrace(20); // Penalty for failing
                     }
                 }
             }
@@ -153,12 +159,7 @@ function increaseTrace(amount) {
         logToSystem("CRITICAL", "TRACE COMPLETE. SECURITY FORCES DISPATCHED TO HACKER LOCATION.");
         typeText("\n[!!!] TRACE 100% - CONNECTION SEVERED [!!!]");
         input.disabled = true;
-        setTimeout(() => {
-            traceLevel = 0;
-            document.getElementById('trace-bar').style.width = '0%';
-            input.disabled = false;
-            typeText("\n[✔] Rerouting connection... Access restored.");
-        }, 10000);
+        update(ref(db, `rooms/${currentRoomCode}/gameState`), { status: 'game_over' });
     }
 }
 
@@ -200,6 +201,17 @@ Waiting for agent connection...\n`;
         }
     });
 
+    // Listen for Game Over / Restart
+    const statusRef = ref(db, `rooms/${roomCode}/gameState/status`);
+    onValue(statusRef, (snapshot) => {
+        if (snapshot.val() === 'playing') {
+            traceLevel = 0;
+            document.getElementById('trace-bar').style.width = '0%';
+            input.disabled = false;
+            activeMinigame = null;
+        }
+    });
+
     // Sync Node Data (simulate changing system status)
     setInterval(() => {
         document.getElementById('cpu-usage').innerText = `${Math.floor(Math.random() * 40 + 10)}%`;
@@ -210,4 +222,9 @@ Waiting for agent connection...\n`;
             logToSystem("INFO", "Routine network scan completed. No anomalies.");
         }
     }, 5000);
+
+    // Close Manual Event
+    document.getElementById("btn-close-manual").addEventListener("click", () => {
+        document.getElementById("hacker-manual-ui").classList.add("hidden");
+    });
 }

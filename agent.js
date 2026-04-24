@@ -1,5 +1,5 @@
 import { db } from './firebase_config.js';
-import { ref, get, update, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { ref, get, update, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const btnAgentTrigger = document.getElementById('btn-agent-trigger');
 const btnAgentKeypad = document.getElementById('btn-agent-keypad');
@@ -21,6 +21,19 @@ export async function initAgentOS(roomCode) {
 
     // Add a log for the hacker
     const logsRef = ref(db, `rooms/${roomCode}/logs`);
+    onValue(logsRef, (snapshot) => {
+        // Logs can be handled or displayed in the future for the agent
+    });
+
+    // Listen for Game Over / Restart
+    const statusRef = ref(db, `rooms/${roomCode}/gameState/status`);
+    onValue(statusRef, (snapshot) => {
+        if (snapshot.val() === 'playing') {
+            suspicionLevel = 0;
+            suspicionBar.style.width = '0%';
+        }
+    });
+
     const newLogRef = push(logsRef);
     await set(newLogRef, {
         type: "INFO",
@@ -91,6 +104,6 @@ function increaseSuspicion(amount) {
             type: "CRITICAL",
             msg: `[${new Date().toLocaleTimeString()}] SUSPICIOUS ACTIVITY LIMIT REACHED. GUARDS ALERTED.`
         });
-        alert("MAX SUSPICION! The guards have spotted you!");
+        update(ref(db, `rooms/${currentRoomCode}/gameState`), { status: 'game_over' });
     }
 }

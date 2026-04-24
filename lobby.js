@@ -22,6 +22,10 @@ const displayRoomCode = document.getElementById('display-room-code');
 const displayPlayers = document.getElementById('display-players');
 const agentDisplayCode = document.getElementById('agent-display-code');
 
+const gameOverUI = document.getElementById('game-over-ui');
+const btnRetry = document.getElementById('btn-retry');
+const btnMainMenu = document.getElementById('btn-main-menu');
+
 let currentRoomToJoin = null;
 
 // Helper to generate 4-digit code
@@ -34,6 +38,16 @@ function showRoleSelection(roomCode) {
     lobbyUI.classList.add('hidden');
     roleUI.classList.remove('hidden');
     roleRoomCode.innerText = roomCode;
+    
+    // Listen for Game Over State
+    const statusRef = ref(db, `rooms/${roomCode}/gameState/status`);
+    onValue(statusRef, (snapshot) => {
+        if (snapshot.val() === 'game_over') {
+            gameOverUI.classList.remove('hidden');
+        } else {
+            gameOverUI.classList.add('hidden'); // hide if it resets
+        }
+    });
 }
 
 btnCreate.addEventListener('click', async () => {
@@ -122,4 +136,26 @@ btnRoleAgent.addEventListener('click', () => {
     agentDisplayCode.innerText = currentRoomToJoin;
 
     initAgentOS(currentRoomToJoin);
+});
+
+// Game Over Buttons
+btnRetry.addEventListener('click', async () => {
+    if (!currentRoomToJoin) return;
+    
+    // Reset room state
+    const roomRef = ref(db, `rooms/${currentRoomToJoin}`);
+    await set(child(roomRef, 'gameState'), {
+        alarms: false,
+        security: { lasers: "ACTIVE", cameras: "ONLINE" },
+        status: 'playing' // Clears game_over flag
+    });
+    
+    // Let the hacker/agent UI reset logic (trace/suspicion) be handled dynamically or by page reload for now.
+    // For a simple retry without reload, we just clear the game over UI. Trace and Suspicion variables should reset.
+    // But since they are local variables in the modules, a full reload is safer to avoid desync:
+    window.location.reload(); 
+});
+
+btnMainMenu.addEventListener('click', () => {
+    window.location.reload();
 });
