@@ -1,5 +1,7 @@
 # Deep Web Heist 🕵️‍♂️💻
 
+# 🖥️ [Clique aqui para acessar o jogo!](https://gustaaxz.github.io/deep_heist/)
+
 Bem-vindo ao **Deep Web Heist**, um jogo de assalto assimétrico multiplayer! Neste jogo, um jogador assume o papel do **Hacker**, controlando e desativando sistemas de segurança através de um terminal, enquanto os outros jogadores atuam como **Agentes de Campo**, precisando se infiltrar em prédios corporativos e desviar de lasers, câmeras e guardas.
 
 ## 🎮 Como Jogar (Multijogador)
