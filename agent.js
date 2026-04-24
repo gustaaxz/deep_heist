@@ -2,8 +2,6 @@ import { db } from './firebase_config.js';
 import { ref, get, update, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const btnAgentTrigger = document.getElementById('btn-agent-trigger');
-const btnAgentKeypad = document.getElementById('btn-agent-keypad');
-const inputKeypad = document.getElementById('agent-keypad-input');
 const suspicionBar = document.getElementById('suspicion-bar');
 
 const btnUsb = document.getElementById('btn-agent-usb');
@@ -105,28 +103,7 @@ btnAgentTrigger.addEventListener('click', async () => {
     }
 });
 
-btnAgentKeypad.addEventListener('click', async () => {
-    if (!currentRoomCode) return;
-    const pin = inputKeypad.value.trim();
-    const logsRef = ref(db, `rooms/${currentRoomCode}/logs`);
-    const newLogRef = push(logsRef);
 
-    if (pin === "734") { // Hardcoded correct pin for now, can be dynamic later
-        await set(newLogRef, {
-            type: "INFO",
-            msg: `[${new Date().toLocaleTimeString()}] DOOR UNLOCKED. Agent used correct PIN at Sector 4.`
-        });
-        alert("ACCESS GRANTED. Door Unlocked.");
-        inputKeypad.value = "";
-    } else {
-        increaseSuspicion(25);
-        await set(newLogRef, {
-            type: "WARNING",
-            msg: `[${new Date().toLocaleTimeString()}] INVALID PIN ATTEMPT at Sector 4.`
-        });
-        alert("ACCESS DENIED. Incorrect PIN.");
-    }
-});
 
 // LAYER 1: USB BYPASS
 btnUsb.addEventListener('click', async () => {
