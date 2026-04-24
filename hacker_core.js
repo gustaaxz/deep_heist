@@ -201,7 +201,7 @@ input.addEventListener("keydown", async (e) => {
         const [cmd, ...args] = cmdString.split(" ");
         
         if (CommandLibrary[cmd]) {
-            const response = CommandLibrary[cmd](args);
+            const response = await CommandLibrary[cmd](args);
             if (response) {
                 if (cmd === 'clear') {
                     // handled instantly
