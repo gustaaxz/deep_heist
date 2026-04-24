@@ -115,12 +115,12 @@ Awaiting command...
         </div>
 
         <!-- HACKER MANUAL MODAL -->
-        <div id="hacker-manual-ui" class="hidden" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 800px; height: 80%; background: var(--panel-bg); border: 2px solid var(--neon-green); z-index: 90; display: flex; flex-direction: column; box-shadow: 0 0 20px var(--neon-green);">
-            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <div id="hacker-manual-ui" class="hidden" style="position: absolute; top: 10%; left: 10%; width: 800px; height: 600px; max-width: 90vw; max-height: 90vh; background: var(--panel-bg); border: 2px solid var(--neon-green); z-index: 90; display: flex; flex-direction: column; box-shadow: 0 0 20px var(--neon-green); resize: both; overflow: hidden;">
+            <div id="manual-header" class="panel-header" style="display: flex; justify-content: space-between; align-items: center; cursor: move;">
                 <span>HACKER MANUAL (DEEP WEB HEIST)</span>
                 <button id="btn-close-manual" style="background: transparent; color: var(--alert-red); border: none; font-size: 1.5rem; cursor: pointer; font-weight: bold;">X</button>
             </div>
-            <div class="panel-content" style="padding: 20px; font-size: 1.3rem; line-height: 1.5; color: #ccc;">
+            <div class="panel-content" style="padding: 20px; font-size: 1.3rem; line-height: 1.5; color: #ccc; overflow-y: auto; flex: 1;">
                 <h2 style="color: var(--neon-green); margin-top: 0;">Objetivo da Missão</h2>
                 <p>O <strong>Hacker</strong> é os olhos e ouvidos do <strong>Agente de Campo</strong>. Seu trabalho é monitorar a rede, desativar sistemas de segurança, quebrar senhas e guiar o Agente pelo prédio corporativo em segurança.</p>
                 
