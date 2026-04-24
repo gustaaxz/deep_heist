@@ -1,7 +1,7 @@
-import { db } from './firebase_config.js';
+import { db } from './firebase_config.js?v=2';
 import { ref, set, get, child, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { initHackerOS } from './hacker_core.js';
-import { initAgentOS } from './agent.js';
+import { initHackerOS } from './hacker_core.js?v=2';
+import { initAgentOS } from './agent.js?v=2';
 
 // DOM Elements
 const btnCreate = document.getElementById('btn-create-server');
