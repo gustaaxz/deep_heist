@@ -98,6 +98,9 @@ const CommandLibrary = {
         }
 
         if (activeMinigame) return "A session is already active.";
+        if (!args[0]) {
+            return "Usage: brute_force [ip_address]";
+        }
         if (args[0] !== "10.0.0.5") {
             increaseTrace(10);
             return "Target not vulnerable or offline.";
