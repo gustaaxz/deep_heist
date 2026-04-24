@@ -1,4 +1,4 @@
-import { db } from './firebase_config.js?v=3';
+import { db } from './firebase_config.js';
 import { ref, get, update, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const btnAgentTrigger = document.getElementById('btn-agent-trigger');

@@ -1,7 +1,9 @@
-import { db } from './firebase_config.js?v=3';
+import { db } from './firebase_config.js';
 import { ref, set, get, child, onValue, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { initHackerOS } from './hacker_core.js?v=3';
-import { initAgentOS } from './agent.js?v=3';
+import { initHackerOS } from './hacker_core.js';
+import { initAgentOS } from './agent.js';
+
+console.log("=== LOBBY.JS STARTED ===");
 
 // Garbage Collector for Dead Rooms
 async function cleanupDeadRooms() {
@@ -75,6 +77,7 @@ function showRoleSelection(roomCode) {
 }
 
 btnCreate.addEventListener('click', async () => {
+    console.log("CREATE SERVER CLICKED!");
     btnCreate.disabled = true;
     statusDiv.innerText = "Creating secure connection...";
     
