@@ -21,6 +21,23 @@
             <div id="lobby-status" style="margin-top: 20px; font-size: 1.2rem; color: var(--alert-red);"></div>
         </div>
 
+        <!-- ROLE SELECTION INTERFACE -->
+        <div id="role-ui" class="hidden">
+            <h1 class="title-glitch" data-text="SELECT ROLE">SELECT ROLE</h1>
+            <div class="lobby-panel">
+                <h2 style="margin: 0; color: #fff;">Room: <span id="role-room-code"></span></h2>
+                <button id="btn-role-hacker" class="btn">Play as Hacker</button>
+                <button id="btn-role-agent" class="btn" style="border-color: #3498db; color: #3498db;">Play as Agent</button>
+            </div>
+        </div>
+
+        <!-- AGENT UI INTERFACE (Integrated) -->
+        <div id="agent-ui" class="hidden">
+            <h2 style="color: white; margin-bottom: 20px;">Agent Connected to Room: <span id="agent-display-code" style="color: #3498db;"></span></h2>
+            <p style="color: #ccc; margin-bottom: 40px; font-size: 1.2rem;">This is a stub. Click below to simulate triggering an alarm for the Hacker.</p>
+            <button id="btn-agent-trigger" class="btn" style="background:#e74c3c; color: white; border: none; font-weight: bold;">Trigger Vault Laser Alarm</button>
+        </div>
+
         <!-- HACKER OS INTERFACE (Hidden initially) -->
         <div id="hacker-ui" class="hidden">
             

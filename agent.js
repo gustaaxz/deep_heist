@@ -1,55 +1,29 @@
 import { db } from './firebase_config.js';
-import { ref, get, child, update, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { ref, get, update, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const btnJoin = document.getElementById('btn-join');
-const btnTrigger = document.getElementById('btn-trigger');
-const inputCode = document.getElementById('room-code');
-const statusDiv = document.getElementById('status');
-const joinSection = document.getElementById('join-section');
-const gameSection = document.getElementById('game-section');
-const displayCode = document.getElementById('display-code');
-
+const btnAgentTrigger = document.getElementById('btn-agent-trigger');
 let currentRoomCode = null;
 
-btnJoin.addEventListener('click', async () => {
-    const code = inputCode.value.trim();
-    if (code.length !== 4) {
-        statusDiv.innerText = "Please enter a 4-digit code.";
-        return;
-    }
-
-    statusDiv.innerText = "Connecting...";
+export async function initAgentOS(roomCode) {
+    currentRoomCode = roomCode;
     
-    const dbRef = ref(db);
-    const roomSnapshot = await get(child(dbRef, `rooms/${code}`));
+    // Register agent
+    const agentId = "agent_" + Math.floor(Math.random() * 1000);
+    await update(ref(db, `rooms/${roomCode}/players/${agentId}`), {
+        role: "Agent",
+        status: "online"
+    });
 
-    if (roomSnapshot.exists()) {
-        currentRoomCode = code;
-        
-        // Register agent
-        const agentId = "agent_" + Math.floor(Math.random() * 1000);
-        await update(ref(db, `rooms/${code}/players/${agentId}`), {
-            role: "Agent",
-            status: "online"
-        });
+    // Add a log for the hacker
+    const logsRef = ref(db, `rooms/${roomCode}/logs`);
+    const newLogRef = push(logsRef);
+    await set(newLogRef, {
+        type: "INFO",
+        msg: `[${new Date().toLocaleTimeString()}] INTRUSION DETECTED: Unknown entity entered the premises.`
+    });
+}
 
-        // Add a log for the hacker
-        const logsRef = ref(db, `rooms/${code}/logs`);
-        const newLogRef = push(logsRef);
-        await set(newLogRef, {
-            type: "INFO",
-            msg: `[${new Date().toLocaleTimeString()}] INTRUSION DETECTED: Unknown entity entered the premises.`
-        });
-
-        joinSection.style.display = 'none';
-        gameSection.style.display = 'block';
-        displayCode.innerText = code;
-    } else {
-        statusDiv.innerText = "Room not found.";
-    }
-});
-
-btnTrigger.addEventListener('click', async () => {
+btnAgentTrigger.addEventListener('click', async () => {
     if (!currentRoomCode) return;
     
     // Check if security is active before triggering alarm

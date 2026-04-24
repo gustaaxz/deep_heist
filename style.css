@@ -157,11 +157,32 @@ body {
 
 /* --- Hacker OS UI --- */
 #hacker-ui {
-  display: none; /* Hidden by default */
+  display: flex; /* Changed from none */
   width: 100%;
   height: 100%;
   flex-direction: row;
 }
+
+#role-ui {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
+#agent-ui {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  background: #111;
+  font-family: sans-serif;
+}
+
 
 .panel {
   border: 1px solid var(--panel-border);
