@@ -42,14 +42,33 @@
                 </div>
             </div>
 
-            <div style="margin-bottom: 30px; background: #222; padding: 20px; border-radius: 10px; border: 1px solid #444; display: flex; flex-direction: column; align-items: center;">
-                <h3 style="color: white; margin-top: 0;">SECURITY KEYPAD</h3>
-                <input type="text" id="agent-keypad-input" placeholder="***" maxlength="3" style="font-size: 2rem; text-align: center; width: 150px; margin-bottom: 15px; background: #000; color: #fff; border: 2px solid #555; border-radius: 5px;">
-                <button id="btn-agent-keypad" class="btn" style="background: #3498db; color: white; border: none; font-weight: bold; width: 100%;">SUBMIT PIN</button>
+            <!-- LAYER 1: USB -->
+            <div id="agent-layer1" style="margin-bottom: 20px; background: #222; padding: 20px; border-radius: 10px; border: 1px solid #444; width: 80%; max-width: 400px; text-align: center;">
+                <h3 style="color: white; margin-top: 0;">L1: EXTERNAL FIREWALL</h3>
+                <p style="color: #aaa; font-size: 0.9rem;">Find the local server box to bridge the connection for your Hacker.</p>
+                <button id="btn-agent-usb" class="btn" style="background: #8e44ad; color: white; border: none; font-weight: bold; width: 100%;">PLUG USB BYPASS</button>
             </div>
 
-            <p style="color: #ccc; margin-bottom: 20px; font-size: 1.2rem;">Quick Actions:</p>
-            <button id="btn-agent-trigger" class="btn" style="background:#e74c3c; color: white; border: none; font-weight: bold;">Trigger Vault Laser Alarm</button>
+            <!-- LAYER 2: WIRES & KEYPAD -->
+            <div id="agent-layer2" class="hidden" style="margin-bottom: 20px; background: #222; padding: 20px; border-radius: 10px; border: 1px solid #444; width: 80%; max-width: 400px; text-align: center;">
+                <h3 style="color: white; margin-top: 0;">L2: INTERNAL SECURITY ROUTING</h3>
+                <p style="color: #aaa; font-size: 0.9rem;">The door alarm is armed. The Hacker must read the manual and tell you which wire to cut!</p>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="btn btn-wire" data-color="RED" style="background: #c0392b; flex: 1; border: none; color: white; font-weight:bold;">CUT RED</button>
+                    <button class="btn btn-wire" data-color="GREEN" style="background: #27ae60; flex: 1; border: none; color: white; font-weight:bold;">CUT GREEN</button>
+                    <button class="btn btn-wire" data-color="BLUE" style="background: #2980b9; flex: 1; border: none; color: white; font-weight:bold;">CUT BLUE</button>
+                </div>
+            </div>
+
+            <!-- LAYER 3: PAYLOAD HIDE -->
+            <div id="agent-layer3" class="hidden" style="margin-bottom: 20px; background: #222; padding: 20px; border-radius: 10px; border: 1px solid #444; width: 80%; max-width: 400px; text-align: center; border-color: var(--alert-red);">
+                <h3 style="color: var(--alert-red); margin-top: 0;">L3: VAULT PAYLOAD EXTRACTION</h3>
+                <p style="color: #aaa; font-size: 0.9rem;">The Hacker is downloading the payload! Guards are actively searching the area. Keep your Suspicion low!</p>
+                <button id="btn-agent-hide" class="btn" style="background: #f39c12; color: black; border: none; font-weight: bold; width: 100%;">HIDE / DISTRACT GUARD</button>
+            </div>
+
+            <p style="color: #ccc; margin-bottom: 10px; font-size: 1.2rem;">Quick Actions:</p>
+            <button id="btn-agent-trigger" class="btn" style="background:#e74c3c; color: white; border: none; font-weight: bold; padding: 5px 10px; font-size: 0.9rem;">Force Alarm</button>
         </div>
 
         <!-- HACKER OS INTERFACE (Hidden initially) -->
@@ -91,8 +110,12 @@ Awaiting command...
 
             <!-- RIGHT SIDEBAR -->
             <div id="sidebar-right" class="panel">
+                <div class="panel-header" style="color: #f1c40f;">EXTRACTION TIMER</div>
+                <div class="panel-content" style="flex: 0; min-height: 50px; border-bottom: 1px solid var(--dim-green); display: flex; justify-content: center; align-items: center;">
+                    <span id="hacker-timer" style="font-size: 2rem; font-weight: bold; color: #f1c40f;">15:00</span>
+                </div>
                 <div class="panel-header">ROOM INFO</div>
-                <div class="panel-content" style="flex: 0; min-height: 100px; border-bottom: 1px solid var(--dim-green);">
+                <div class="panel-content" style="flex: 0; min-height: 80px; border-bottom: 1px solid var(--dim-green);">
                     <div>SERVER CODE: <span id="display-room-code" style="color:var(--neon-green); font-weight:bold;">----</span></div>
                     <div>PLAYERS: <span id="display-players">1/3</span></div>
                 </div>
@@ -107,11 +130,18 @@ Awaiting command...
         <!-- GAME OVER INTERFACE -->
         <div id="game-over-ui" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(20, 0, 0, 0.95); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
             <h1 class="title-glitch" style="color: var(--alert-red);" data-text="SYSTEM COMPROMISED">SYSTEM COMPROMISED</h1>
-            <h2 style="color: white; margin-bottom: 40px; font-family: sans-serif;">Vocês foram pegos, não há mais volta.</h2>
+            <h2 id="game-over-reason" style="color: white; margin-bottom: 40px; font-family: sans-serif;">Vocês foram pegos, não há mais volta.</h2>
             <div style="display: flex; gap: 20px;">
                 <button id="btn-retry" class="btn" style="border-color: var(--neon-green); color: var(--neon-green);">Tentar Novamente</button>
                 <button id="btn-main-menu" class="btn" style="border-color: #555; color: #aaa;">Menu Principal</button>
             </div>
+        </div>
+
+        <!-- VICTORY INTERFACE -->
+        <div id="victory-ui" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 20, 0, 0.95); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+            <h1 class="title-glitch" style="color: #f1c40f;" data-text="HEIST SUCCESSFUL">HEIST SUCCESSFUL</h1>
+            <h2 style="color: white; margin-bottom: 40px; font-family: sans-serif;">Payload extraído com sucesso. A corporação caiu.</h2>
+            <button id="btn-victory-main-menu" class="btn" style="border-color: var(--neon-green); color: var(--neon-green);">Voltar ao Lobby</button>
         </div>
 
         <!-- HACKER MANUAL MODAL -->
@@ -126,18 +156,21 @@ Awaiting command...
                 
                 <h2 style="color: var(--neon-green);">Comandos do Terminal</h2>
                 <ul>
-                    <li><strong style="color: white;">help</strong>: Lista todos os comandos básicos.</li>
-                    <li><strong style="color: white;">manual</strong>: Abre esta página de guia.</li>
-                    <li><strong style="color: white;">netscan</strong>: Mapeia a rede para encontrar IPs e nodos vulneráveis no prédio.</li>
-                    <li><strong style="color: white;">ping [ip]</strong>: Testa a conexão com um IP específico para ver se ele está ativo.</li>
-                    <li><strong style="color: white;">brute_force [ip]</strong>: Inicia um mini-game de adivinhação de PIN (3 dígitos). Você tem 5 tentativas. <br>🟩 = Certo e na posição certa | 🟨 = Certo, mas na posição errada | 🟥 = Errado.</li>
-                    <li><strong style="color: white;">sql [query]</strong>: Executa injeções de banco de dados. <br>Exemplo vital: <span style="color: var(--alert-red);">sql UPDATE SECURITY SET STATUS='OFF'</span> (Desativa os lasers para o Agente passar).</li>
-                    <li><strong style="color: white;">clear</strong>: Limpa a tela do terminal.</li>
+                    <li><strong style="color: white;">help / manual</strong>: Abrem guias de ajuda.</li>
+                    <li><strong style="color: white;">netscan</strong>: Mapeia a rede para encontrar IPs.</li>
+                    <li><strong style="color: white;">brute_force [ip]</strong>: Quebra o firewall externo (Senha de 4 dígitos). Requer que o Agente conecte o USB primeiro. <br>🟩 = Certo e na posição | 🟨 = Certo, posição errada | 🟥 = Errado.</li>
+                    <li><strong style="color: white;">scan_db</strong>: Procura no banco de dados o nome da tabela secreta de segurança (Camada 2).</li>
+                    <li><strong style="color: white;">sql UPDATE [tabela] SET LASERS='OFF'</strong>: Injeção de SQL para desativar os lasers do cofre. Substitua [tabela] pela tabela encontrada no scan_db.</li>
+                    <li><strong style="color: white;">cat /manuals/door.txt</strong>: Lê o manual da porta para saber qual Fio (Vermelho, Verde ou Azul) o agente deve cortar.</li>
+                    <li><strong style="color: white;">decrypt_payload</strong>: Rouba o arquivo final do cofre (Camada 3). Demora 30 segundos reais e bloqueia o terminal!</li>
+                    <li><strong style="color: white;">clear</strong>: Limpa a tela.</li>
                 </ul>
 
-                <h2 style="color: var(--neon-green);">Regras de Ouro</h2>
-                <p>1. <strong>Comunique-se por voz:</strong> O Agente não vê o que você vê. Se você desativar um laser, avise-o. Se ele vir um teclado numérico, ache o PIN e dite para ele.</p>
-                <p>2. <strong>Cuidado com o TRACE:</strong> Errar comandos aumenta o sinal de rastreamento. Se chegar a 100%, vocês perdem.</p>
+                <h2 style="color: var(--neon-green);">As 3 Camadas do Assalto</h2>
+                <p>1. <strong>Camada 1:</strong> Agente pluga USB -> Hacker faz brute_force (4 dígitos).</p>
+                <p>2. <strong>Camada 2:</strong> Hacker acha tabela via scan_db e roda SQL para desligar lasers. Hacker também lê o manual da porta e grita qual fio o agente deve cortar.</p>
+                <p>3. <strong>Camada 3:</strong> Hacker roda decrypt_payload. Durante os 30s de download, o Agente vai ser caçado e tem que se esconder sem parar!</p>
+                <p><strong>CUIDADO:</strong> Vocês têm exatos 15 MINUTOS para fazer tudo isso antes que o timer zere!</p>
             </div>
         </div>
 

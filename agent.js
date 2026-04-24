@@ -6,8 +6,13 @@ const btnAgentKeypad = document.getElementById('btn-agent-keypad');
 const inputKeypad = document.getElementById('agent-keypad-input');
 const suspicionBar = document.getElementById('suspicion-bar');
 
+const btnUsb = document.getElementById('btn-agent-usb');
+const wireButtons = document.querySelectorAll('.btn-wire');
+const btnHide = document.getElementById('btn-agent-hide');
+
 let currentRoomCode = null;
 let suspicionLevel = 0;
+let layer3Interval = null;
 
 export async function initAgentOS(roomCode) {
     currentRoomCode = roomCode;
@@ -26,11 +31,42 @@ export async function initAgentOS(roomCode) {
     });
 
     // Listen for Game Over / Restart
-    const statusRef = ref(db, `rooms/${roomCode}/gameState/status`);
+    const statusRef = ref(db, `rooms/${roomCode}/gameState`);
     onValue(statusRef, (snapshot) => {
-        if (snapshot.val() === 'playing') {
+        const state = snapshot.val();
+        if (!state) return;
+        
+        if (state.status === 'playing') {
             suspicionLevel = 0;
             suspicionBar.style.width = '0%';
+            
+            // Manage UI progression based on layers
+            if (!state.layer1_usb) {
+                document.getElementById('agent-layer1').classList.remove('hidden');
+                document.getElementById('agent-layer2').classList.add('hidden');
+                document.getElementById('agent-layer3').classList.add('hidden');
+            } else if (state.layer1_done && !state.layer2_done) {
+                document.getElementById('agent-layer1').classList.add('hidden');
+                document.getElementById('agent-layer2').classList.remove('hidden');
+            } else if (state.layer2_done && state.layer3_active) {
+                document.getElementById('agent-layer2').classList.add('hidden');
+                document.getElementById('agent-layer3').classList.remove('hidden');
+                
+                // Start Layer 3 auto-suspicion if not already running
+                if (!layer3Interval && !state.heist_success && state.status === 'playing') {
+                    layer3Interval = setInterval(() => {
+                        increaseSuspicion(10);
+                    }, 1500); // Suspicion goes up quickly!
+                }
+            }
+            
+            if (state.heist_success || state.status === 'game_over') {
+                clearInterval(layer3Interval);
+                layer3Interval = null;
+            }
+        } else {
+            clearInterval(layer3Interval);
+            layer3Interval = null;
         }
     });
 
@@ -92,6 +128,58 @@ btnAgentKeypad.addEventListener('click', async () => {
     }
 });
 
+// LAYER 1: USB BYPASS
+btnUsb.addEventListener('click', async () => {
+    if (!currentRoomCode) return;
+    await update(ref(db, `rooms/${currentRoomCode}/gameState`), { layer1_usb: true });
+    
+    const logsRef = ref(db, `rooms/${currentRoomCode}/logs`);
+    await set(push(logsRef), {
+        type: "INFO",
+        msg: `[${new Date().toLocaleTimeString()}] EXTERNAL HARDWARE DETECTED. USB Bypass connected by Field Agent.`
+    });
+    alert("USB Plugged in. Tell your Hacker to start the Brute Force!");
+});
+
+// LAYER 2: WIRES
+wireButtons.forEach(btn => {
+    btn.addEventListener('click', async () => {
+        if (!currentRoomCode) return;
+        
+        const stateRef = ref(db, `rooms/${currentRoomCode}/gameState`);
+        const snap = await get(stateRef);
+        const state = snap.val();
+        
+        const color = btn.getAttribute('data-color');
+        const logsRef = ref(db, `rooms/${currentRoomCode}/logs`);
+        
+        if (color === state.layer2_wire) {
+            await update(stateRef, { layer2_done: true });
+            await set(push(logsRef), {
+                type: "INFO",
+                msg: `[${new Date().toLocaleTimeString()}] ALARM DISARMED. Correct wire severed.`
+            });
+            alert("Correct! The alarm is disarmed. Proceed to Vault!");
+        } else {
+            increaseSuspicion(30);
+            await set(push(logsRef), {
+                type: "WARNING",
+                msg: `[${new Date().toLocaleTimeString()}] TAMPERING DETECTED! Incorrect wire severed on Security Box.`
+            });
+            alert("WRONG WIRE! Suspicion increased drastically!");
+        }
+    });
+});
+
+// LAYER 3: HIDE
+btnHide.addEventListener('click', () => {
+    if (suspicionLevel > 0) {
+        suspicionLevel -= 15;
+        if (suspicionLevel < 0) suspicionLevel = 0;
+        suspicionBar.style.width = `${suspicionLevel}%`;
+    }
+});
+
 function increaseSuspicion(amount) {
     suspicionLevel += amount;
     if (suspicionLevel > 100) suspicionLevel = 100;
@@ -105,5 +193,6 @@ function increaseSuspicion(amount) {
             msg: `[${new Date().toLocaleTimeString()}] SUSPICIOUS ACTIVITY LIMIT REACHED. GUARDS ALERTED.`
         });
         update(ref(db, `rooms/${currentRoomCode}/gameState`), { status: 'game_over' });
+        document.getElementById('game-over-reason').innerText = "O Agente foi capturado pelos guardas.";
     }
 }

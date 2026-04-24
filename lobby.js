@@ -39,13 +39,20 @@ function showRoleSelection(roomCode) {
     roleUI.classList.remove('hidden');
     roleRoomCode.innerText = roomCode;
     
-    // Listen for Game Over State
+    // Listen for Game Over / Victory State
     const statusRef = ref(db, `rooms/${roomCode}/gameState/status`);
     onValue(statusRef, (snapshot) => {
         if (snapshot.val() === 'game_over') {
             gameOverUI.classList.remove('hidden');
         } else {
             gameOverUI.classList.add('hidden'); // hide if it resets
+        }
+    });
+
+    const victoryRef = ref(db, `rooms/${roomCode}/gameState/heist_success`);
+    onValue(victoryRef, (snapshot) => {
+        if (snapshot.val() === true) {
+            document.getElementById('victory-ui').classList.remove('hidden');
         }
     });
 }
@@ -65,13 +72,27 @@ btnCreate.addEventListener('click', async () => {
             return;
         }
 
+        const tables = ["SEC_89X", "VAULT_DB", "CORE_AUTH", "SYS_900"];
+        const wires = ["RED", "BLUE", "GREEN"];
+        const randomTable = tables[Math.floor(Math.random() * tables.length)];
+        const randomWire = wires[Math.floor(Math.random() * wires.length)];
+
         await set(roomRef, {
             status: 'waiting',
             createdAt: Date.now(),
             players: {},
             gameState: {
+                status: 'playing',
+                startTime: Date.now(),
                 alarms: false,
-                security: { lasers: "ACTIVE", cameras: "ONLINE" }
+                security: { lasers: "ACTIVE", cameras: "ONLINE" },
+                layer1_usb: false,
+                layer1_done: false,
+                layer2_table: randomTable,
+                layer2_wire: randomWire,
+                layer2_done: false,
+                layer3_active: false,
+                heist_success: false
             },
             logs: {
                 0: { msg: "System Initialized. Awaiting agents...", type: "INFO" }
@@ -144,18 +165,30 @@ btnRetry.addEventListener('click', async () => {
     
     // Reset room state
     const roomRef = ref(db, `rooms/${currentRoomToJoin}`);
+    const tables = ["SEC_89X", "VAULT_DB", "CORE_AUTH", "SYS_900"];
+    const wires = ["RED", "BLUE", "GREEN"];
+    
     await set(child(roomRef, 'gameState'), {
+        status: 'playing',
+        startTime: Date.now(),
         alarms: false,
         security: { lasers: "ACTIVE", cameras: "ONLINE" },
-        status: 'playing' // Clears game_over flag
+        layer1_usb: false,
+        layer1_done: false,
+        layer2_table: tables[Math.floor(Math.random() * tables.length)],
+        layer2_wire: wires[Math.floor(Math.random() * wires.length)],
+        layer2_done: false,
+        layer3_active: false,
+        heist_success: false
     });
     
-    // Let the hacker/agent UI reset logic (trace/suspicion) be handled dynamically or by page reload for now.
-    // For a simple retry without reload, we just clear the game over UI. Trace and Suspicion variables should reset.
-    // But since they are local variables in the modules, a full reload is safer to avoid desync:
     window.location.reload(); 
 });
 
 btnMainMenu.addEventListener('click', () => {
+    window.location.reload();
+});
+
+document.getElementById('btn-victory-main-menu').addEventListener('click', () => {
     window.location.reload();
 });

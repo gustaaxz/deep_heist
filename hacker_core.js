@@ -1,5 +1,6 @@
 import { db } from './firebase_config.js?v=2';
-import { ref, onValue, update, set, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { ref, onValue, update, set, push, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+let timerInterval = null;
 
 let currentRoomCode = null;
 let activeMinigame = null;
@@ -7,51 +8,109 @@ let traceLevel = 0;
 
 // --- MOTOR DE COMANDOS ---
 const CommandLibrary = {
-    help: () => "Available: ls, cat, sql, netscan, ping, brute_force, clear, manual",
+    help: () => "Available: ls, cat, sql, netscan, ping, brute_force, scan_db, decrypt_payload, clear, manual",
     
     manual: () => {
         document.getElementById("hacker-manual-ui").classList.remove("hidden");
         return "Opening Hacker Manual...";
     },
 
-    sql: (args) => {
+    scan_db: async () => {
+        const snap = await get(ref(db, `rooms/${currentRoomCode}/gameState`));
+        const state = snap.val();
+        if (!state.layer1_done) return "ERROR: Access Denied. Firewall must be breached first (Layer 1).";
+        
+        await typeText("Scanning local intranet...\n[+] Database cluster found.\n[+] Analyzing security schema...\n[!] Vulnerable table identified: " + state.layer2_table);
+    },
+
+    sql: async (args) => {
+        const snap = await get(ref(db, `rooms/${currentRoomCode}/gameState`));
+        const state = snap.val();
+        
         const query = args.join(" ").toUpperCase();
-        if (query.includes("UPDATE SECURITY SET STATUS='OFF'")) {
-            if (currentRoomCode) {
-                update(ref(db, `rooms/${currentRoomCode}/gameState/security`), { lasers: "DISABLED", overrideBy: "HACKER_ROOT" });
-                logToSystem("WARNING", "SQL Injection detected on security sub-system. Lasers offline.");
-            }
-            return "[✔] SQL Injection Success: Lasers deactivated.";
+        if (query.includes(`UPDATE ${state.layer2_table} SET LASERS='OFF'`)) {
+            await update(ref(db, `rooms/${currentRoomCode}/gameState/security`), { lasers: "DISABLED" });
+            logToSystem("INFO", "SQL Injection Successful. Vault Lasers DISABLED.");
+            return "Query executed successfully. 1 row affected.";
         }
-        return "[✘] SQL Error: Unauthorized table access or malformed query.";
+        increaseTrace(15);
+        return "ERROR: Invalid syntax or table not found. TRACE INCREASED.";
     },
-
-    ls: () => "drwxr-xr-x  root  system  conf/\n-rw-r--r--  root  user    passwords.db",
     
-    netscan: () => {
-        let nodes = "";
-        for(let i=0; i<8; i++) {
-            const status = Math.random() > 0.2 ? "[ONLINE]" : "[OFFLINE]";
-            nodes += `Node 192.168.1.${100 + i} ${status} - Latency: ${Math.floor(Math.random() * 50)}ms\n`;
-        }
-        return nodes;
+    decrypt_payload: async () => {
+        const snap = await get(ref(db, `rooms/${currentRoomCode}/gameState`));
+        const state = snap.val();
+        
+        if (!state.layer2_done) return "ERROR: Vault door is closed. Disarm alarms first (Layer 2).";
+        if (state.security.lasers !== "DISABLED") return "ERROR: Vault lasers are active. Cannot access physical payload terminal.";
+        
+        await update(ref(db, `rooms/${currentRoomCode}/gameState`), { layer3_active: true });
+        
+        input.disabled = true;
+        await typeText("\n[!] INITIATING PAYLOAD EXTRACTION...\n[!] WARNING: MASSIVE DATA TRANSFER DETECTED BY SECURITY.\n");
+        logToSystem("CRITICAL", "PAYLOAD DOWNLOADING. GUARDS DISPATCHED.");
+        
+        // 30 second fake loading bar
+        let progress = 0;
+        return new Promise(resolve => {
+            const downloadInterval = setInterval(async () => {
+                progress += 10;
+                let bar = "█".repeat(progress/10) + "-".repeat(10 - progress/10);
+                output.innerText += `\r[${bar}] ${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(downloadInterval);
+                    update(ref(db, `rooms/${currentRoomCode}/gameState`), { heist_success: true });
+                    resolve("\n[+] PAYLOAD EXTRACTED SECURELY. HEIST COMPLETE.");
+                }
+            }, 3000);
+        });
     },
 
+    ls: () => "bin/   etc/   home/   var/   manuals/",
+    
+    cat: async (args) => {
+        if (args[0] === "secret.txt") return "Nice try, but you won't find passwords here.";
+        if (args[0] === "/manuals/door.txt") {
+            const snap = await get(ref(db, `rooms/${currentRoomCode}/gameState`));
+            const state = snap.val();
+            return `SECURITY DOOR MANUAL:\nTo disarm the physical alarm, the Field Agent must cut the [${state.layer2_wire}] wire.\nWARNING: Incorrect wire will trigger lockdown.`;
+        }
+        return "cat: " + (args[0] || "") + ": No such file or directory";
+    },
+
+    netscan: () => "Scanning network...\n192.168.1.1 (Router)\n192.168.1.10 (Local PC)\n10.0.0.5 (Security Node)",
+    
     ping: (args) => {
         if (!args[0]) return "Usage: ping [ip_address]";
-        return `Pinging ${args[0]} with 32 bytes of data:\nReply from ${args[0]}: bytes=32 time=14ms TTL=54\nReply from ${args[0]}: bytes=32 time=15ms TTL=54`;
+        return `Pinging ${args[0]} with 32 bytes of data:\nReply from ${args[0]}: bytes=32 time=4ms TTL=64\nReply from ${args[0]}: bytes=32 time=5ms TTL=64`;
     },
 
-    brute_force: (args) => {
-        if (!args[0]) return "Usage: brute_force [ip_address]\nBypasses basic numeric pin codes.";
+    brute_force: async (args) => {
+        const snap = await get(ref(db, `rooms/${currentRoomCode}/gameState`));
+        const state = snap.val();
         
-        const targetPin = Math.floor(100 + Math.random() * 900).toString(); // 3 digit pin
+        if (!state.layer1_usb) {
+            return "ERROR: No physical connection. Field Agent must plug the USB bypass into the terminal first.";
+        }
+        if (state.layer1_done) {
+            return "Firewall already breached.";
+        }
+
+        if (activeMinigame) return "A session is already active.";
+        if (args[0] !== "10.0.0.5") {
+            increaseTrace(10);
+            return "Target not vulnerable or offline.";
+        }
+        
+        // 4 digit PIN
+        const pin = Math.floor(1000 + Math.random() * 9000).toString(); 
         activeMinigame = {
             type: "brute_force",
-            target: targetPin,
-            attempts: 5
+            target: pin,
+            attempts: 7
         };
-        return `Initiating brute force on ${args[0]}...\nTarget is a 3-digit PIN. You have 5 attempts.\nEnter your guess:`;
+        return `Initializing Brute Force Attack on 10.0.0.5...\n[!] Firewall engaged. Target is a 4-digit PIN.\nYou have ${activeMinigame.attempts} attempts.\nEnter your guess:`;
     },
 
     clear: () => {
@@ -109,23 +168,30 @@ input.addEventListener("keydown", async (e) => {
         if (activeMinigame) {
             if (activeMinigame.type === "brute_force") {
                 const guess = cmdString;
-                if (guess === activeMinigame.target) {
-                    activeMinigame = null;
-                    await typeText("[✔] PIN ACCEPTED. ACCESS GRANTED.");
+                if (guess.length !== 4 || isNaN(guess)) {
+                    await typeText("Invalid input. Must be a 4-digit number.");
                 } else {
                     activeMinigame.attempts--;
                     let hints = "";
-                    for(let i=0; i<3; i++) {
-                        if(guess[i] === activeMinigame.target[i]) hints += "🟩";
-                        else if(activeMinigame.target.includes(guess[i])) hints += "🟨";
+                    for (let i = 0; i < 4; i++) {
+                        if (guess[i] === activeMinigame.target[i]) hints += "🟩";
+                        else if (activeMinigame.target.includes(guess[i])) hints += "🟨";
                         else hints += "🟥";
                     }
-                    if (activeMinigame.attempts > 0) {
-                        await typeText(`[✘] INVALID PIN. Hint: ${hints}\nAttempts remaining: ${activeMinigame.attempts}\nEnter your guess:`);
-                    } else {
+
+                    if (guess === activeMinigame.target) {
                         activeMinigame = null;
-                        await typeText(`[!] BRUTE FORCE FAILED. System locked. The correct PIN was ${activeMinigame.target}.`);
-                        increaseTrace(20); // Penalty for failing
+                        await update(ref(db, `rooms/${currentRoomCode}/gameState`), { layer1_done: true });
+                        logToSystem("WARNING", "Firewall breached from unknown IP.");
+                        await typeText("[✔] ACCESS GRANTED. External Firewall Breached.");
+                    } else {
+                        if (activeMinigame.attempts > 0) {
+                            await typeText(`[✘] INVALID PIN. Hint: ${hints}\nAttempts remaining: ${activeMinigame.attempts}\nEnter your guess:`);
+                        } else {
+                            activeMinigame = null;
+                            await typeText(`[!] BRUTE FORCE FAILED. System locked. The correct PIN was ${activeMinigame.target}.`);
+                            increaseTrace(20); // Penalty for failing
+                        }
                     }
                 }
             }
@@ -201,14 +267,52 @@ Waiting for agent connection...\n`;
         }
     });
 
-    // Listen for Game Over / Restart
-    const statusRef = ref(db, `rooms/${roomCode}/gameState/status`);
+    // Listen for Game Over / Restart / Timer
+    const statusRef = ref(db, `rooms/${roomCode}/gameState`);
     onValue(statusRef, (snapshot) => {
-        if (snapshot.val() === 'playing') {
-            traceLevel = 0;
-            document.getElementById('trace-bar').style.width = '0%';
-            input.disabled = false;
-            activeMinigame = null;
+        const state = snapshot.val();
+        if (!state) return;
+
+        if (state.status === 'playing') {
+            // Only reset if trace is full (prevents resetting on every state update)
+            if (traceLevel >= 100) {
+                traceLevel = 0;
+                document.getElementById('trace-bar').style.width = '0%';
+                input.disabled = false;
+                activeMinigame = null;
+            }
+            
+            // Timer Logic
+            if (!timerInterval) {
+                timerInterval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+                    const remaining = (15 * 60) - elapsed;
+                    
+                    if (remaining <= 0) {
+                        clearInterval(timerInterval);
+                        document.getElementById('hacker-timer').innerText = "00:00";
+                        update(ref(db, `rooms/${currentRoomCode}/gameState`), { status: 'game_over' });
+                        document.getElementById('game-over-reason').innerText = "O tempo limite de extração acabou.";
+                    } else {
+                        const m = Math.floor(remaining / 60).toString().padStart(2, '0');
+                        const s = (remaining % 60).toString().padStart(2, '0');
+                        document.getElementById('hacker-timer').innerText = `${m}:${s}`;
+                        if (remaining <= 60) {
+                            document.getElementById('hacker-timer').style.color = 'var(--alert-red)';
+                        } else {
+                            document.getElementById('hacker-timer').style.color = '#f1c40f';
+                        }
+                    }
+                }, 1000);
+            }
+            
+            if (state.heist_success) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        } else {
+            clearInterval(timerInterval);
+            timerInterval = null;
         }
     });
 
