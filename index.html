@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL - HEIST OS v4.0</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="crt" id="app-container">
+        
+        <!-- LOBBY INTERFACE -->
+        <div id="lobby-ui">
+            <h1 class="title-glitch" data-text="DEEP WEB HEIST">DEEP WEB HEIST</h1>
+            <div class="lobby-panel">
+                <button id="btn-create-server" class="btn">Create Server</button>
+                <div style="margin: 10px 0; color: #333;">--- OR ---</div>
+                <input type="text" id="input-server-code" class="input-field" placeholder="Enter 4-Digit Code" maxlength="4">
+                <button id="btn-join-server" class="btn">Join Server</button>
+            </div>
+            <div id="lobby-status" style="margin-top: 20px; font-size: 1.2rem; color: var(--alert-red);"></div>
+        </div>
+
+        <!-- HACKER OS INTERFACE (Hidden initially) -->
+        <div id="hacker-ui" class="hidden">
+            
+            <!-- LEFT SIDEBAR -->
+            <div id="sidebar-left" class="panel">
+                <div class="panel-header">NETWORK NODES</div>
+                <div class="panel-content" id="node-list">
+                    <!-- Nodes populated by JS -->
+                    <div class="node-item"><span>LOCAL_ROUTER</span><span class="node-status">[UP]</span></div>
+                </div>
+                <div class="panel-header" style="border-top: 1px solid var(--dim-green);">SYSTEM STATUS</div>
+                <div class="panel-content">
+                    <div>CPU: <span id="cpu-usage">12%</span></div>
+                    <div>RAM: <span id="ram-usage">2048MB</span></div>
+                    <div>NET: <span id="net-usage">SECURE</span></div>
+                </div>
+            </div>
+
+            <!-- MAIN TERMINAL -->
+            <div id="main-terminal" class="panel">
+                <div class="panel-header">TERMINAL - ROOT ACCESS</div>
+                <div id="output">Initializing Heist OS... [OK]
+Connecting to secure server... [OK]
+Awaiting command...
+</div>
+                <div id="input-area">
+                    <span id="cmd-prefix">root@heist:~$ </span>
+                    <input type="text" id="cmd-input" autocomplete="off" spellcheck="false" autofocus>
+                </div>
+            </div>
+
+            <!-- RIGHT SIDEBAR -->
+            <div id="sidebar-right" class="panel">
+                <div class="panel-header">ROOM INFO</div>
+                <div class="panel-content" style="flex: 0; min-height: 100px; border-bottom: 1px solid var(--dim-green);">
+                    <div>SERVER CODE: <span id="display-room-code" style="color:var(--neon-green); font-weight:bold;">----</span></div>
+                    <div>PLAYERS: <span id="display-players">1/3</span></div>
+                </div>
+                <div class="panel-header">SECURITY LOGS</div>
+                <div class="panel-content" id="security-logs">
+                    <!-- Logs populated by JS -->
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    
+    <!-- Main scripts -->
+    <script type="module" src="lobby.js"></script>
+</body>
+</html>

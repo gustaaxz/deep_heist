@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>AGENT VIEW (STUB)</title>
+    <style>
+        body { background: #222; color: #fff; font-family: sans-serif; text-align: center; padding: 50px; }
+        .btn { padding: 15px 30px; font-size: 1.2rem; background: #e74c3c; color: white; border: none; cursor: pointer; border-radius: 5px; margin: 10px; }
+        .btn:hover { background: #c0392b; }
+        input { padding: 10px; font-size: 1.2rem; text-align: center; }
+    </style>
+</head>
+<body>
+    <div id="join-section">
+        <h2>Join as Field Agent</h2>
+        <input type="text" id="room-code" placeholder="Enter Room Code" maxlength="4">
+        <button id="btn-join" class="btn" style="background:#3498db;">Connect</button>
+        <div id="status"></div>
+    </div>
+
+    <div id="game-section" style="display:none;">
+        <h2>Agent Connected to Room: <span id="display-code"></span></h2>
+        <p>This is a stub. Click below to simulate triggering an alarm for the Hacker.</p>
+        <button id="btn-trigger" class="btn">Trigger Vault Laser Alarm</button>
+    </div>
+
+    <script type="module" src="agent.js"></script>
+</body>
+</html>

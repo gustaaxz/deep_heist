@@ -1,0 +1,300 @@
+:root {
+  --neon-green: #00ff41;
+  --dark-bg: #050505;
+  --alert-red: #ff003c;
+  --dim-green: #008f11;
+  --panel-bg: #0a0a0a;
+  --panel-border: #1a1a1a;
+  --crt-curvature: 0.1;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+  color: var(--neon-green);
+  font-family: 'VT323', 'Courier New', monospace;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+}
+
+/* --- CRT Screen Effect --- */
+.crt::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.25) 50%
+  );
+  background-size: 100% 4px;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.crt::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: radial-gradient(
+    circle,
+    rgba(0, 0, 0, 0) 60%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+  z-index: 51;
+  pointer-events: none;
+}
+
+/* Adds a slight flicker */
+@keyframes flicker {
+  0% { opacity: 0.95; }
+  5% { opacity: 0.85; }
+  10% { opacity: 0.95; }
+  15% { opacity: 1; }
+  100% { opacity: 1; }
+}
+.crt {
+  animation: flicker 0.15s infinite;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* --- App Containers --- */
+#app-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Lobby UI --- */
+#lobby-ui {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
+.title-glitch {
+  font-size: 4rem;
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 5px;
+  animation: glitch 1s linear infinite;
+}
+
+@keyframes glitch {
+  2%, 64% { transform: translate(2px, 0) skew(0deg); }
+  4%, 60% { transform: translate(-2px, 0) skew(0deg); }
+  62% { transform: translate(0, 0) skew(5deg); }
+}
+
+.lobby-panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--neon-green);
+  padding: 2rem;
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 400px;
+}
+
+.btn {
+  background: transparent;
+  color: var(--neon-green);
+  border: 1px solid var(--neon-green);
+  padding: 10px 20px;
+  font-family: inherit;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+
+.btn:hover {
+  background: var(--neon-green);
+  color: #000;
+  box-shadow: 0 0 10px var(--neon-green);
+}
+
+.input-field {
+  background: #000;
+  border: 1px solid var(--dim-green);
+  color: var(--neon-green);
+  padding: 10px;
+  font-family: inherit;
+  font-size: 1.2rem;
+  text-align: center;
+  outline: none;
+}
+.input-field:focus {
+  border-color: var(--neon-green);
+  box-shadow: 0 0 5px var(--neon-green);
+}
+
+/* --- Hacker OS UI --- */
+#hacker-ui {
+  display: none; /* Hidden by default */
+  width: 100%;
+  height: 100%;
+  flex-direction: row;
+}
+
+.panel {
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+#sidebar-left {
+  width: 250px;
+  border-right: 1px solid var(--dim-green);
+}
+
+#main-terminal {
+  flex: 1;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+#sidebar-right {
+  width: 300px;
+  border-left: 1px solid var(--dim-green);
+}
+
+/* Panel Headers */
+.panel-header {
+  background: var(--dim-green);
+  color: #000;
+  padding: 5px 10px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* Terminal Content */
+#output {
+  flex: 1;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  padding: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--dim-green) #000;
+}
+
+#output::-webkit-scrollbar {
+  width: 8px;
+}
+#output::-webkit-scrollbar-thumb {
+  background: var(--dim-green);
+}
+
+#input-area {
+  display: flex;
+  align-items: center;
+  border-top: 1px dashed var(--dim-green);
+  padding-top: 10px;
+  font-size: 1.4rem;
+}
+
+#cmd-prefix {
+  margin-right: 10px;
+  color: var(--alert-red);
+}
+
+#cmd-input {
+  background: transparent;
+  border: none;
+  color: var(--neon-green);
+  width: 100%;
+  outline: none;
+  font-size: 1.4rem;
+  font-family: inherit;
+}
+
+/* Sidebar Content */
+.panel-content {
+  padding: 10px;
+  flex: 1;
+  overflow-y: auto;
+  font-size: 1.1rem;
+}
+
+.log-entry {
+  margin-bottom: 8px;
+  border-bottom: 1px dotted #333;
+  padding-bottom: 4px;
+}
+.log-entry.CRITICAL {
+  color: var(--alert-red);
+  font-weight: bold;
+  text-shadow: 0 0 5px var(--alert-red);
+}
+.log-entry.WARNING {
+  color: #ffaa00;
+}
+
+.node-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+.node-status {
+  color: var(--dim-green);
+}
+
+/* Glitch text utility */
+.glitch-text {
+  position: relative;
+}
+.glitch-text::before, .glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.glitch-text::before {
+  left: 2px;
+  text-shadow: -1px 0 red;
+  clip: rect(24px, 550px, 90px, 0);
+  animation: glitch-anim 3s infinite linear alternate-reverse;
+}
+.glitch-text::after {
+  left: -2px;
+  text-shadow: -1px 0 blue;
+  clip: rect(85px, 550px, 140px, 0);
+  animation: glitch-anim 2s infinite linear alternate-reverse;
+}
+
+.hidden { display: none !important; }
