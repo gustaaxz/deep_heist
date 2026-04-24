@@ -1,7 +1,24 @@
 import { db } from './firebase_config.js?v=3';
-import { ref, set, get, child, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { ref, set, get, child, onValue, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { initHackerOS } from './hacker_core.js?v=3';
 import { initAgentOS } from './agent.js?v=3';
+
+// Garbage Collector for Dead Rooms
+async function cleanupDeadRooms() {
+    const roomsRef = ref(db, 'rooms');
+    const snap = await get(roomsRef);
+    if (snap.exists()) {
+        const now = Date.now();
+        snap.forEach(roomSnap => {
+            const room = roomSnap.val();
+            // Delete rooms older than 2 hours to prevent database bloat
+            if (room.createdAt && (now - room.createdAt > 2 * 60 * 60 * 1000)) {
+                remove(roomSnap.ref);
+            }
+        });
+    }
+}
+cleanupDeadRooms();
 
 // DOM Elements
 const btnCreate = document.getElementById('btn-create-server');
@@ -76,6 +93,9 @@ btnCreate.addEventListener('click', async () => {
         const wires = ["RED", "BLUE", "GREEN"];
         const randomTable = tables[Math.floor(Math.random() * tables.length)];
         const randomWire = wires[Math.floor(Math.random() * wires.length)];
+
+        // Host's connection keeps the room alive. If Host disconnects, room is deleted automatically.
+        onDisconnect(roomRef).remove();
 
         await set(roomRef, {
             status: 'waiting',
@@ -182,7 +202,9 @@ btnRetry.addEventListener('click', async () => {
         heist_success: false
     });
     
-    window.location.reload(); 
+    // We do NOT reload here, because the local JS state resets automatically
+    // when gameState/status changes to 'playing' thanks to the listeners.
+    document.getElementById('game-over-ui').classList.add('hidden');
 });
 
 btnMainMenu.addEventListener('click', () => {
