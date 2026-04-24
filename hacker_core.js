@@ -2,10 +2,12 @@ import { db } from './firebase_config.js';
 import { ref, onValue, update, set, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 let currentRoomCode = null;
+let activeMinigame = null;
+let traceLevel = 0;
 
 // --- MOTOR DE COMANDOS ---
 const CommandLibrary = {
-    help: () => "Available: ls, cat, sql, netscan, ping, clear",
+    help: () => "Available: ls, cat, sql, netscan, ping, brute_force, clear",
     
     sql: (args) => {
         const query = args.join(" ").toUpperCase();
@@ -33,6 +35,18 @@ const CommandLibrary = {
     ping: (args) => {
         if (!args[0]) return "Usage: ping [ip_address]";
         return `Pinging ${args[0]} with 32 bytes of data:\nReply from ${args[0]}: bytes=32 time=14ms TTL=54\nReply from ${args[0]}: bytes=32 time=15ms TTL=54`;
+    },
+
+    brute_force: (args) => {
+        if (!args[0]) return "Usage: brute_force [ip_address]\nBypasses basic numeric pin codes.";
+        
+        const targetPin = Math.floor(100 + Math.random() * 900).toString(); // 3 digit pin
+        activeMinigame = {
+            type: "brute_force",
+            target: targetPin,
+            attempts: 5
+        };
+        return `Initiating brute force on ${args[0]}...\nTarget is a 3-digit PIN. You have 5 attempts.\nEnter your guess:`;
     },
 
     clear: () => {
@@ -68,6 +82,17 @@ async function typeText(text) {
 }
 
 input.addEventListener("keydown", async (e) => {
+    if (e.key === "Tab") {
+        e.preventDefault();
+        const val = input.value.trim();
+        const cmds = Object.keys(CommandLibrary);
+        const matches = cmds.filter(c => c.startsWith(val));
+        if (matches.length === 1) {
+            input.value = matches[0] + " ";
+        }
+        return;
+    }
+
     if (e.key === "Enter" && !isTyping) {
         const cmdString = input.value.trim();
         if (!cmdString) return;
@@ -75,22 +100,67 @@ input.addEventListener("keydown", async (e) => {
         output.innerText += `\nroot@heist:~$ ${cmdString}\n`;
         input.value = "";
         
+        // Handle Active Minigame
+        if (activeMinigame) {
+            if (activeMinigame.type === "brute_force") {
+                const guess = cmdString;
+                if (guess === activeMinigame.target) {
+                    activeMinigame = null;
+                    await typeText("[✔] PIN ACCEPTED. ACCESS GRANTED.");
+                } else {
+                    activeMinigame.attempts--;
+                    let hints = "";
+                    for(let i=0; i<3; i++) {
+                        if(guess[i] === activeMinigame.target[i]) hints += "🟩";
+                        else if(activeMinigame.target.includes(guess[i])) hints += "🟨";
+                        else hints += "🟥";
+                    }
+                    if (activeMinigame.attempts > 0) {
+                        await typeText(`[✘] INVALID PIN. Hint: ${hints}\nAttempts remaining: ${activeMinigame.attempts}\nEnter your guess:`);
+                    } else {
+                        activeMinigame = null;
+                        await typeText(`[!] BRUTE FORCE FAILED. System locked. The correct PIN was ${activeMinigame.target}.`);
+                    }
+                }
+            }
+            return;
+        }
+
         const [cmd, ...args] = cmdString.split(" ");
         
         if (CommandLibrary[cmd]) {
             const response = CommandLibrary[cmd](args);
             if (response) {
                 if (cmd === 'clear') {
-                    // special case
+                    // handled instantly
                 } else {
                     await typeText(response);
                 }
             }
         } else {
             await typeText(`bash: ${cmd}: command not found`);
+            increaseTrace(10);
         }
     }
 });
+
+function increaseTrace(amount) {
+    traceLevel += amount;
+    if (traceLevel > 100) traceLevel = 100;
+    document.getElementById('trace-bar').style.width = `${traceLevel}%`;
+    
+    if (traceLevel >= 100) {
+        logToSystem("CRITICAL", "TRACE COMPLETE. SECURITY FORCES DISPATCHED TO HACKER LOCATION.");
+        typeText("\n[!!!] TRACE 100% - CONNECTION SEVERED [!!!]");
+        input.disabled = true;
+        setTimeout(() => {
+            traceLevel = 0;
+            document.getElementById('trace-bar').style.width = '0%';
+            input.disabled = false;
+            typeText("\n[✔] Rerouting connection... Access restored.");
+        }, 10000);
+    }
+}
 
 function logToSystem(type, msg) {
     if (!currentRoomCode) return;
@@ -103,9 +173,18 @@ function logToSystem(type, msg) {
 }
 
 // --- INITIALIZATION ---
-export function initHackerOS(roomCode) {
+export async function initHackerOS(roomCode) {
     currentRoomCode = roomCode;
     
+    // Intro Text
+    output.innerText = "";
+    const introMsg = `[ HEIST OS v4.0 - ROOT ACCESS GRANTED ]
+Mission: Disable security systems to allow your field agent to infiltrate.
+Type 'help' to see available commands.
+Use [TAB] to autocomplete commands.
+Waiting for agent connection...\n`;
+    await typeText(introMsg);
+
     // Sync Logs
     const logsRef = ref(db, `rooms/${roomCode}/logs`);
     onValue(logsRef, (snapshot) => {

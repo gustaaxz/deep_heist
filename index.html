@@ -34,7 +34,21 @@
         <!-- AGENT UI INTERFACE (Integrated) -->
         <div id="agent-ui" class="hidden">
             <h2 style="color: white; margin-bottom: 20px;">Agent Connected to Room: <span id="agent-display-code" style="color: #3498db;"></span></h2>
-            <p style="color: #ccc; margin-bottom: 40px; font-size: 1.2rem;">This is a stub. Click below to simulate triggering an alarm for the Hacker.</p>
+            
+            <div style="width: 80%; max-width: 400px; margin-bottom: 20px;">
+                <div style="color: #e74c3c; font-weight: bold; text-align: left; margin-bottom: 5px;">SUSPICION LEVEL</div>
+                <div style="background: #333; width: 100%; height: 20px; border-radius: 10px; overflow: hidden; border: 1px solid #555;">
+                    <div id="suspicion-bar" style="background: #e74c3c; width: 0%; height: 100%; transition: width 0.3s;"></div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 30px; background: #222; padding: 20px; border-radius: 10px; border: 1px solid #444; display: flex; flex-direction: column; align-items: center;">
+                <h3 style="color: white; margin-top: 0;">SECURITY KEYPAD</h3>
+                <input type="text" id="agent-keypad-input" placeholder="***" maxlength="3" style="font-size: 2rem; text-align: center; width: 150px; margin-bottom: 15px; background: #000; color: #fff; border: 2px solid #555; border-radius: 5px;">
+                <button id="btn-agent-keypad" class="btn" style="background: #3498db; color: white; border: none; font-weight: bold; width: 100%;">SUBMIT PIN</button>
+            </div>
+
+            <p style="color: #ccc; margin-bottom: 20px; font-size: 1.2rem;">Quick Actions:</p>
             <button id="btn-agent-trigger" class="btn" style="background:#e74c3c; color: white; border: none; font-weight: bold;">Trigger Vault Laser Alarm</button>
         </div>
 
@@ -53,6 +67,12 @@
                     <div>CPU: <span id="cpu-usage">12%</span></div>
                     <div>RAM: <span id="ram-usage">2048MB</span></div>
                     <div>NET: <span id="net-usage">SECURE</span></div>
+                </div>
+                <div class="panel-header" style="border-top: 1px solid var(--dim-green); color: var(--alert-red);">TRACE SIGNAL</div>
+                <div class="panel-content" style="flex: 0; padding-bottom: 15px;">
+                    <div style="background: #111; width: 100%; height: 15px; border: 1px solid var(--alert-red); margin-top: 5px;">
+                        <div id="trace-bar" style="background: var(--alert-red); width: 0%; height: 100%; transition: width 0.3s;"></div>
+                    </div>
                 </div>
             </div>
 
